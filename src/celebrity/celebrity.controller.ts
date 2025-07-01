@@ -3,10 +3,14 @@ import { CelebrityService } from './celebrity.service';
 import { CreateCelebrityDto } from './dto/create-celebrity.dto';
 import { UpdateCelebrityDto } from './dto/update-celebrity.dto'; 
 import { Celebrity as PrismaCelebrityModel } from '@prisma/client'; 
+import { PdfService } from 'src/pdf/pdf.service';
 
 @Controller('celebrities')
 export class CelebrityController {
-  constructor(private readonly celebrityService: CelebrityService) {}
+  constructor(private readonly celebrityService: CelebrityService,
+        private readonly pdfService: PdfService, 
+
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
