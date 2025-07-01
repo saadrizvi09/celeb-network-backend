@@ -1,4 +1,3 @@
-// src/ai/ai.service.ts
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { ConfigService } from '@nestjs/config';
@@ -22,14 +21,13 @@ export class AiService {
   }
 
   async suggestCelebrities(query: string): Promise<string[]> {
-    // REFINED PROMPT: Emphasize direct relevance and avoid unrelated suggestions.
-    const prompt = `Given the input "${query}", suggest 3 to 5 highly relevant and well-known celebrity names that are having the name starting with what is given in input. For example, if the query is "Tom", suggestions might be ["Tom Hanks", "Tom Cruise", "Tom Holland"]. If the query is "Diljit", suggestions should be "Diljit Dosanjh" or any other celebrity who has Diljit in his name. If the input is a sentence like "Punjabi singer who performed at Coachella" suggestion should be from the web,Do NOT suggest names that are unrelated or merely associated. Provide the response as a JSON array of strings, for example: ["Celebrity Name 1", "Celebrity Name 2", "Celebrity Name 3"]. Do not include any other text or formatting outside the JSON array. If no clear, direct matches, respond with an empty JSON array: [].`;
+    const prompt = `Given the query "${query}", If the input is giving name suggest 3 to 5 celebrities whose name starts with the input. If the input is a sentence like Punjabi singer suggest most relevant and well-known Punjabi singers . Provide the response as a JSON array of strings, for example: ["Celebrity Name 1", "Celebrity Name 2", "Celebrity Name 3"]. Do not include any other text or formatting outside the JSON array. If no clear matches, respond with an empty JSON array: [].`;
 
     try {
       const result = await this.suggestionModel.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
-          responseMimeType: 'application/json', // Enforce JSON output
+          responseMimeType: 'application/json', 
         },
       });
 
@@ -52,7 +50,7 @@ export class AiService {
         suggestions = parsedResponse;
       } catch (parseError) {
         console.error(`[AI Service] Failed to parse JSON response for suggestion query "${query}":`, parseError, 'Raw response:', responseText);
-        throw new InternalServerErrorException('Failed to parse AI suggestions response.');
+        throw new Error('Failed to parse AI suggestions response.');
       }
 
       return suggestions;
