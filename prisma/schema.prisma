@@ -24,4 +24,27 @@ model Celebrity {
   category             Json     @default("[]") 
 
   @@map("celebrities") 
+    followedBy Follow[]
+
+}
+model User {
+  id        String   @id @default(uuid()) 
+  username  String   @unique
+  password  String   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  follows Follow[]
+}
+
+model Follow {
+  id           String    @id @default(uuid()) 
+  userId       String
+  celebrityId  String
+  followedAt   DateTime  @default(now())
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celebrity    Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, celebrityId])
 }

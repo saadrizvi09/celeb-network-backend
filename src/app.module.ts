@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { CelebrityModule } from './celebrity/celebrity.module';
 import { AiModule } from './ai/ai.module'; 
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AiModule } from './ai/ai.module';
     PrismaModule,
     CelebrityModule,
     AiModule, 
+    AuthModule
   ],
   controllers: [],
   providers: [],

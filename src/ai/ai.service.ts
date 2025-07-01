@@ -17,8 +17,8 @@ export class AiService {
     }
     this.genAI = new GoogleGenerativeAI(apiKey);
 
-    this.suggestionModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    this.jsonModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    this.suggestionModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    this.jsonModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   }
 
   async suggestCelebrities(query: string): Promise<string[]> {
