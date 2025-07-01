@@ -1,34 +1,23 @@
 // src/pdf/pdf.service.ts
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer-core'; // Use puppeteer-core
+import chromium from '@sparticuz/chromium'; // Correctly import the default export
 
 @Injectable()
 export class PdfService {
   async generateCelebrityPdf(htmlContent: string): Promise<Buffer> {
     let browser;
     try {
-      console.log('[PdfService] Attempting to launch Puppeteer browser...');
-      // IMPORTANT: These arguments are crucial for Puppeteer to run in a Docker/containerized environment like Render.
-      // --no-sandbox: Disables the sandbox, which is often required in container environments.
-      // --disable-setuid-sandbox: Another sandbox-related flag.
-      // --disable-dev-shm-usage: Prevents issues with /dev/shm, common in Docker.
-      // --disable-accelerated-video-decode, --disable-gpu, --no-zygote, --single-process: Reduce resource usage and improve compatibility.
+      console.log('[PdfService] Attempting to launch Puppeteer browser with @sparticuz/chromium...');
+
+      // Configure Puppeteer to use the Chromium executable from @sparticuz/chromium
       browser = await puppeteer.launch({
-        headless: true, // Use 'new' for new headless mode if available, otherwise 'true'
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-video-decode',
-          '--disable-gpu',
-          '--no-zygote',
-          '--single-process'
-        ],
-        // If Puppeteer still struggles to find Chromium, you might need to specify executablePath
-        // For Render, this often means ensuring the underlying Docker image has Chromium installed,
-        // or using a package like 'chrome-aws-lambda' which bundles it.
-        // For now, let's rely on Puppeteer finding it.
+        args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'], // Access args from the imported 'chromium' object
+        defaultViewport: { width: 1280, height: 720 }, // A sensible default viewport for PDF generation
+        executablePath: await chromium.executablePath(), // Access executablePath from the imported 'chromium' object
+        headless: true, // Explicitly set headless to true, as @sparticuz/chromium is designed for this
       });
+
       console.log('[PdfService] Puppeteer browser launched successfully.');
 
       const page = await browser.newPage();
