@@ -1,14 +1,27 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, IsArray, ArrayMinSize, ValidateIf } from 'class-validator';
-import { Type } from 'class-transformer';
-
+import { IsString, IsNotEmpty, IsOptional, IsInt, IsArray, ArrayMinSize } from 'class-validator';
+import { Type, Transform } from 'class-transformer'; 
 export class CreateCelebrityDto {
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsArray()
-  @IsString({ each: true }) 
-  @ArrayMinSize(1) 
+  
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+       
+        return [];
+      }
+    }
+    return value;
+  })
+  @IsArray({ message: 'Category must be an array' }) 
+  @IsString({ each: true, message: 'Each category element must be a string' }) 
+  @ArrayMinSize(1, { message: 'Category must contain at least 1 element' }) 
   category: string[]; 
 
   @IsString()
@@ -38,7 +51,7 @@ export class CreateCelebrityDto {
 
   @IsOptional()
   
-  sampleSetlistOrKeynoteTopics?: any; 
+  sampleSetlistOrKeynoteTopics?: string[];
 
   @IsString()
   @IsOptional()
