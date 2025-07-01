@@ -1,8 +1,7 @@
-// src/celebrity/celebrity.service.ts (ensure it matches previous example)
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCelebrityDto } from './dto/create-celebrity.dto';
-import { UpdateCelebrityDto } from './dto/update-celebrity.dto'; // <-- IMPORT UpdateCelebrityDto
-import { Celebrity as PrismaCelebrityModel } from '@prisma/client'; // <-- IMPORT Prisma's generated type
+import { UpdateCelebrityDto } from './dto/update-celebrity.dto'; 
+import { Celebrity as PrismaCelebrityModel } from '@prisma/client'; 
 import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
@@ -29,7 +28,6 @@ export class CelebrityService {
     return celebrity;
   }
 
-  // Change parameter type from CreateCelebrityDto to UpdateCelebrityDto
   async update(id: string, updateCelebrityDto: UpdateCelebrityDto): Promise<PrismaCelebrityModel> {
     try {
       return await this.prisma.celebrity.update({

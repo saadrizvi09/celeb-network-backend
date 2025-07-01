@@ -1,10 +1,9 @@
 import { PrismaModule } from './../prisma/prisma.module';
-// src/app.module.ts (relevant parts)
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { CelebrityModule } from './celebrity/celebrity.module';
-import { AiModule } from './ai/ai.module'; // <-- Import your new AI module
+import { AiModule } from './ai/ai.module'; 
 
 @Module({
   imports: [

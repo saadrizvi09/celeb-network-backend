@@ -17,12 +17,10 @@ export class AiService {
     }
     this.genAI = new GoogleGenerativeAI(apiKey);
 
-    // Both models now set to 'gemini-1.5-flash'
     this.suggestionModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    this.jsonModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // Changed to flash as requested
+    this.jsonModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); 
   }
 
-  // Updated suggestCelebrities method for Gemini (no change here from previous flash version)
   async suggestCelebrities(query: string): Promise<string[]> {
     const prompt = `Based on the following description, suggest a list of 3-5 celebrity names that match. Respond only with a comma-separated list of names, e.g., "Celebrity1, Celebrity2, Celebrity3". If no clear matches, respond with "None".\nDescription: "${query}"`;
 
@@ -42,7 +40,7 @@ export class AiService {
     }
   }
 
-  // Updated getCelebrityDetailsForAutofill method for Gemini (model changed to flash)
+  
   async getCelebrityDetailsForAutofill(celebrityName: string): Promise<AiCelebrityDataDto | null> {
     const prompt = `Provide detailed information for the celebrity "${celebrityName}" in JSON format. Include the following fields: name, category (e.g., Singer, Actor, Speaker), country, description, profileImageUrl, instagramHandle, youtubeChannel, spotifyId, imdbId, fanbaseCount (as a number), and sampleSetlistOrKeynoteTopics (as an array of strings). If a piece of information is not available or applicable, omit the field. Ensure all string values are enclosed in double quotes. Only return the JSON object, nothing else.`;
 
