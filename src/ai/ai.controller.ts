@@ -12,10 +12,10 @@ class SuggestCelebrityQueryDto {
 class AutofillCelebrityParamDto {
   @IsString()
   @IsNotEmpty()
-  name: string; // The celebrity name from the URL parameter
+  name: string; 
 }
 
-@Controller('ai') // Base route: /ai
+@Controller('ai')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class AiController {
   constructor(private readonly aiService: AiService) {}
@@ -25,7 +25,6 @@ export class AiController {
     return this.aiService.suggestCelebrities(queryDto.q);
   }
 
-  // --- NEW ENDPOINT FOR AUTO-FILL DATA ---
   @Get('autofill-celebrity/:name') 
   async autofillCelebrityData(@Param() params: AutofillCelebrityParamDto): Promise<AiCelebrityDataDto> {
     const celebrityData = await this.aiService.getCelebrityDetailsForAutofill(params.name);

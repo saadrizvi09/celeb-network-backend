@@ -1,4 +1,3 @@
-// src/ai/ai.service.ts
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { ConfigService } from '@nestjs/config';
@@ -40,7 +39,7 @@ export class AiService {
     }
   }
 
-  
+
   async getCelebrityDetailsForAutofill(celebrityName: string): Promise<AiCelebrityDataDto | null> {
     const prompt = `Provide detailed information for the celebrity "${celebrityName}" in JSON format. Include the following fields: name, category (e.g., Singer, Actor, Speaker), country, description, profileImageUrl, instagramHandle, youtubeChannel, spotifyId, imdbId, fanbaseCount (as a number), and sampleSetlistOrKeynoteTopics (as an array of strings). If a piece of information is not available or applicable, omit the field. Ensure all string values are enclosed in double quotes. Only return the JSON object, nothing else.`;
 
