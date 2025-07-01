@@ -17,21 +17,43 @@ export class AiService {
     this.genAI = new GoogleGenerativeAI(apiKey);
 
     this.suggestionModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    this.jsonModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); 
+    this.jsonModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   }
 
   async suggestCelebrities(query: string): Promise<string[]> {
-    const prompt = `Based on the following description, suggest a list of 3-5 celebrity names that match. Respond only with a comma-separated list of names, e.g., "Celebrity1, Celebrity2, Celebrity3". If no clear matches, respond with "None".\nDescription: "${query}"`;
+    const prompt = `Given the query "${query}", suggest 3 to 5 highly relevant and well-known celebrity names. Provide the response as a JSON array of strings, for example: ["Celebrity Name 1", "Celebrity Name 2", "Celebrity Name 3"]. Do not include any other text or formatting outside the JSON array. If no clear matches, respond with an empty JSON array: [].`;
 
     try {
-      const result = await this.suggestionModel.generateContent(prompt);
+      const result = await this.suggestionModel.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json', 
+        },
+      });
+
       const response = result.response;
       const responseText = response.text().trim();
 
-      if (responseText.toLowerCase() === 'none' || !responseText) {
+      if (!responseText) {
+        console.warn(`[AI Service] Gemini returned empty response for suggestion query: "${query}"`);
         return [];
       }
-      return responseText.split(',').map(name => name.trim());
+
+      let suggestions: string[];
+      try {
+        const parsedResponse = JSON.parse(responseText);
+
+        if (!Array.isArray(parsedResponse) || !parsedResponse.every(s => typeof s === 'string')) {
+          console.error(`[AI Service] Gemini returned malformed JSON for suggestions. Expected array of strings, got:`, parsedResponse);
+          throw new Error('AI did not return a valid JSON array of strings for suggestions.');
+        }
+        suggestions = parsedResponse;
+      } catch (parseError) {
+        console.error(`[AI Service] Failed to parse JSON response for suggestion query "${query}":`, parseError, 'Raw response:', responseText);
+        throw new Error('Failed to parse AI suggestions response.');
+      }
+
+      return suggestions;
     } catch (error) {
       console.error('Error suggesting celebrities from Gemini AI:', error);
       console.error('Full Gemini error object (suggestCelebrities):', JSON.stringify(error, null, 2));
