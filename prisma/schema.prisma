@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// prisma/schema.prisma
+model Celebrity { // Change 'celebrities' to 'Celebrity'
+  id                   String   @id(map: "PK_4f835cc46da1c53dd6486ff6a31") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                 String   @unique(map: "UQ_3a011f41a2945754b5ef8be87a5") @db.VarChar
+  country              String   @db.VarChar
+  profileImageUrl      String?  @db.VarChar
+  youtubeChannel       String?  @db.VarChar
+  spotifyId            String?  @db.VarChar
+  imdbId               String?  @db.VarChar
+  fanbaseCount         Int      @default(0)
+  sampleSetlistOrKeynoteTopics Json?
+  createdAt            DateTime @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime @default(now()) @db.Timestamp(6)
+  description          String?
+  instagramHandle      String?  @db.VarChar
+  category             Json     @default("[]") // Note: PostgreSQL JSONB is usually preferred for array-like JSON
+
+  @@map("celebrities") // This line tells Prisma to map the 'Celebrity' model to the 'celebrities' table in your DB. KEEP THIS.
+}
