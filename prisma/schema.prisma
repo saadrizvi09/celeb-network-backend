@@ -24,6 +24,8 @@ model Celebrity {
   description                 String?   
   instagramHandle             String?   @db.VarChar 
   category                    Json      @default("[]") 
+   userId                  String?   @unique @db.Uuid // Ensure this is unique if a celebrity profile can only be managed by one user
+  user                    User?     @relation(fields: [userId], references: [id])
 
   followedBy Follow[]
 
@@ -38,6 +40,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   follows Follow[]
+    celebrityProfile Celebrity?
+
 }
 
 model Follow {
