@@ -20,23 +20,41 @@ export class AuthService {
       throw new BadRequestException('Username already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10); // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         username,
         password: hashedPassword,
+        // No 'role' field in Prisma User model, so we don't set it here.
+        // Role will be determined by linked celebrity profile or default to 'fan'.
       },
     });
 
-    const accessToken = this.jwtService.sign({ userId: user.id, username: user.username });
+    // For new sign-ups without a linked celebrity profile yet, default to 'fan' role.
+    // The celebrityProfile will be null here.
+    const role: 'fan' | 'celebrity' = 'fan'; // Default role for new sign-ups
+
+    const payload = {
+      userId: user.id,
+      username: user.username,
+      role: role, // Embed the default role in the JWT
+    };
+    const accessToken = this.jwtService.sign(payload);
     return { accessToken };
   }
 
   async signIn(authDto: AuthDto): Promise<{ accessToken: string }> {
     const { username, password } = authDto;
 
-    const user = await this.prisma.user.findUnique({ where: { username } });
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+      include: {
+        celebrityProfile: { // Include the celebrity profile to determine role
+          select: { id: true, name: true }
+        }
+      }
+    });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -46,7 +64,20 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const accessToken = this.jwtService.sign({ userId: user.id, username: user.username });
+    // Determine role based on whether a celebrity profile is linked
+    const role: 'fan' | 'celebrity' = user.celebrityProfile ? 'celebrity' : 'fan';
+
+    const payload = {
+      userId: user.id,
+      username: user.username,
+      role: role, // Embed the determined role in the JWT
+      // If the user is a celebrity, include their celebrityId and name in the token
+      ...(user.celebrityProfile && {
+        celebrityId: user.celebrityProfile.id,
+        celebrityName: user.celebrityProfile.name,
+      }),
+    };
+    const accessToken = this.jwtService.sign(payload);
     return { accessToken };
   }
 

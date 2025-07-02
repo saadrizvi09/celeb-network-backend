@@ -2,26 +2,29 @@
 import {
   Controller,
   Get,
-  Post, // Assuming you have a POST for creating celebrities
+  Post,
   Body,
   Param,
-  Res, // Used for sending the PDF response
+  Res,
   NotFoundException,
   InternalServerErrorException,
   UsePipes,
   ValidationPipe,
+  UseGuards, // Import UseGuards
 } from '@nestjs/common';
 import { CelebrityService } from './celebrity.service';
-import { CreateCelebrityDto } from './dto/create-celebrity.dto'; // Assuming you have this DTO
-import { Response } from 'express'; // IMPORTANT: Import Response from express
-import { PdfService } from '../pdf/pdf.service'; // IMPORTANT: Import PdfService
+import { CreateCelebrityDto } from './dto/create-celebrity.dto';
+import { Response } from 'express';
+import { PdfService } from '../pdf/pdf.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Import JwtAuthGuard
 
+@UseGuards(JwtAuthGuard) // Protect all routes in this controller
 @Controller('celebrities')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true })) // Apply validation pipe globally to this controller
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class CelebrityController {
   constructor(
     private readonly celebrityService: CelebrityService,
-    private readonly pdfService: PdfService, // Correctly injected PdfService
+    private readonly pdfService: PdfService,
   ) {}
 
   @Post()
@@ -43,20 +46,41 @@ export class CelebrityController {
     return celebrity;
   }
 
+  // NEW: Endpoint to get celebrity by name
+  @Get('by-name/:name')
+  async findByName(@Param('name') name: string) {
+    const celebrity = await this.celebrityService.findByName(name);
+    if (!celebrity) {
+      throw new NotFoundException(`Celebrity with name "${name}" not found.`);
+    }
+    return celebrity;
+  }
+
   // PDF Generation Endpoint
   @Get(':id/pdf')
   async generateCelebrityProfilePdf(
     @Param('id') id: string,
-    @Res() res: Response, // Use @Res() decorator for direct response manipulation
+    @Res() res: Response,
   ) {
     const celebrity = await this.celebrityService.findOne(id);
     if (!celebrity) {
       throw new NotFoundException(`Celebrity with ID "${id}" not found.`);
     }
 
-    // Construct HTML for the PDF. This is a crucial step.
-    // You can make this as fancy as your frontend profile page.
-    // Ensure all styles are inline or within <style> tags as Puppeteer renders HTML directly.
+    // Ensure profileImageUrl is handled correctly if it's an empty string or null
+    const profileImageHtml = celebrity.profileImageUrl && celebrity.profileImageUrl !== ''
+      ? `<img src="${celebrity.profileImageUrl}" alt="${celebrity.name}" />`
+      : '';
+
+    // Ensure category and sampleSetlistOrKeynoteTopics are handled as arrays for display
+    const categoriesDisplay = Array.isArray(celebrity.category)
+      ? celebrity.category.join(', ')
+      : celebrity.category; // Fallback if it somehow comes as a string
+
+    const topicsDisplay = Array.isArray(celebrity.sampleSetlistOrKeynoteTopics) && celebrity.sampleSetlistOrKeynoteTopics.length > 0
+      ? `<ul>${celebrity.sampleSetlistOrKeynoteTopics.map(item => `<li>${item}</li>`).join('')}</ul>`
+      : '';
+
     let htmlContent = `
       <html>
       <head>
@@ -74,9 +98,9 @@ export class CelebrityController {
         </style>
       </head>
       <body>
-        ${celebrity.profileImageUrl ? `<img src="${celebrity.profileImageUrl}" alt="${celebrity.name}" />` : ''}
+        ${profileImageHtml}
         <h1>${celebrity.name}</h1>
-        <p><strong>Category:</strong> ${Array.isArray(celebrity.category) ? celebrity.category.join(', ') : celebrity.category}</p>
+        <p><strong>Category:</strong> ${categoriesDisplay}</p>
         <p><strong>Country:</strong> ${celebrity.country}</p>
         ${celebrity.fanbaseCount ? `<p><strong>Fanbase:</strong> ${celebrity.fanbaseCount.toLocaleString()}</p>` : ''}
 
@@ -95,11 +119,10 @@ export class CelebrityController {
           ${celebrity.imdbId ? `<p class="social-link"><strong>IMDb:</strong> <a href="https://www.imdb.com/name/${celebrity.imdbId}/" target="_blank" rel="noopener noreferrer">${celebrity.imdbId}</a></p>` : ''}
         </div>
 
-${Array.isArray(celebrity.sampleSetlistOrKeynoteTopics) && celebrity.sampleSetlistOrKeynoteTopics.length > 0 ? `          <div class="section">
+        ${Array.isArray(celebrity.sampleSetlistOrKeynoteTopics) && celebrity.sampleSetlistOrKeynoteTopics.length > 0 ? `
+          <div class="section">
             <h2>Setlist / Topics</h2>
-            <ul>
-              ${(Array.isArray(celebrity.sampleSetlistOrKeynoteTopics) ? celebrity.sampleSetlistOrKeynoteTopics : [celebrity.sampleSetlistOrKeynoteTopics]).map(item => `<li>${item}</li>`).join('')}
-            </ul>
+            ${topicsDisplay}
           </div>
         ` : ''}
       </body>
@@ -109,14 +132,12 @@ ${Array.isArray(celebrity.sampleSetlistOrKeynoteTopics) && celebrity.sampleSetli
     try {
       const pdfBuffer = await this.pdfService.generateCelebrityPdf(htmlContent);
 
-      // Set headers for PDF download
       res.set({
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${celebrity.name.replace(/\s/g, '_')}_profile.pdf"`,
         'Content-Length': pdfBuffer.length,
       });
 
-      // Send the PDF buffer
       res.send(pdfBuffer);
     } catch (error) {
       console.error('Failed to generate or send PDF:', error);

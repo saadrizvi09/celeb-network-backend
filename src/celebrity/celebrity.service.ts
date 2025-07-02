@@ -1,7 +1,8 @@
+// src/celebrity/celebrity.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCelebrityDto } from './dto/create-celebrity.dto';
-import { UpdateCelebrityDto } from './dto/update-celebrity.dto'; 
-import { Celebrity as PrismaCelebrityModel } from '@prisma/client'; 
+import { UpdateCelebrityDto } from './dto/update-celebrity.dto'; // Assuming you have this DTO
+import { Celebrity as PrismaCelebrityModel } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
@@ -9,8 +10,19 @@ export class CelebrityService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCelebrityDto: CreateCelebrityDto): Promise<PrismaCelebrityModel> {
+    // category and sampleSetlistOrKeynoteTopics are already transformed to string[] by CreateCelebrityDto's @Transform
+    // So we can directly use them.
+    const data = {
+      ...createCelebrityDto,
+      // Ensure category is always an array, even if the DTO's transform results in an empty array or undefined
+      category: createCelebrityDto.category || [],
+      // Ensure sampleSetlistOrKeynoteTopics is always an array
+      sampleSetlistOrKeynoteTopics: createCelebrityDto.sampleSetlistOrKeynoteTopics || [],
+      fanbaseCount: createCelebrityDto.fanbaseCount || 0, // Ensure default if not provided
+    };
+
     return this.prisma.celebrity.create({
-      data: createCelebrityDto,
+      data: data,
     });
   }
 
@@ -28,11 +40,29 @@ export class CelebrityService {
     return celebrity;
   }
 
+  async findByName(name: string): Promise<PrismaCelebrityModel | null> {
+    return this.prisma.celebrity.findUnique({
+      where: { name: name },
+    });
+  }
+
   async update(id: string, updateCelebrityDto: UpdateCelebrityDto): Promise<PrismaCelebrityModel> {
+    const dataToUpdate: any = { ...updateCelebrityDto };
+
+    // category and sampleSetlistOrKeynoteTopics are already transformed to string[] by UpdateCelebrityDto's @Transform
+    // (assuming UpdateCelebrityDto extends CreateCelebrityDto and inherits the @Transform logic)
+    if (updateCelebrityDto.category !== undefined) {
+      dataToUpdate.category = updateCelebrityDto.category || [];
+    }
+
+    if (updateCelebrityDto.sampleSetlistOrKeynoteTopics !== undefined) {
+      dataToUpdate.sampleSetlistOrKeynoteTopics = updateCelebrityDto.sampleSetlistOrKeynoteTopics || [];
+    }
+
     try {
       return await this.prisma.celebrity.update({
         where: { id },
-        data: updateCelebrityDto,
+        data: dataToUpdate,
       });
     } catch (error) {
       if (error.code === 'P2025') {
