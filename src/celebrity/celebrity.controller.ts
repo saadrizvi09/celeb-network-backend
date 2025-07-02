@@ -18,7 +18,8 @@ import { Response } from 'express';
 import { PdfService } from '../pdf/pdf.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Import JwtAuthGuard
 
-@UseGuards(JwtAuthGuard) // Protect all routes in this controller
+// IMPORTANT FIX: Remove @UseGuards(JwtAuthGuard) from the class level
+// @UseGuards(JwtAuthGuard) // REMOVE THIS LINE
 @Controller('celebrities')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class CelebrityController {
@@ -27,17 +28,23 @@ export class CelebrityController {
     private readonly pdfService: PdfService,
   ) {}
 
+  // This endpoint requires authentication (only logged-in users can create)
+  @UseGuards(JwtAuthGuard) // Apply guard only to this specific route
   @Post()
   async create(@Body() createCelebrityDto: CreateCelebrityDto) {
+    // You might want to add role-based authorization here as well
+    // e.g., if (req.user.role !== 'celebrity') throw new ForbiddenException();
     return this.celebrityService.create(createCelebrityDto);
   }
 
   @Get()
+  // This endpoint should be public (no @UseGuards here)
   async findAll() {
     return this.celebrityService.findAll();
   }
 
   @Get(':id')
+  // This endpoint should be public (no @UseGuards here)
   async findOne(@Param('id') id: string) {
     const celebrity = await this.celebrityService.findOne(id);
     if (!celebrity) {
@@ -46,7 +53,7 @@ export class CelebrityController {
     return celebrity;
   }
 
-  // NEW: Endpoint to get celebrity by name
+  // NEW: Endpoint to get celebrity by name - should also be public
   @Get('by-name/:name')
   async findByName(@Param('name') name: string) {
     const celebrity = await this.celebrityService.findByName(name);
@@ -56,7 +63,8 @@ export class CelebrityController {
     return celebrity;
   }
 
-  // PDF Generation Endpoint
+  // PDF Generation Endpoint - This should likely be protected
+  @UseGuards(JwtAuthGuard) // Apply guard only to this specific route
   @Get(':id/pdf')
   async generateCelebrityProfilePdf(
     @Param('id') id: string,
