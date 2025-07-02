@@ -26,7 +26,7 @@ export class FollowsService {
     });
 
     if (existingFollow) {
-      // Return a specific message if already following
+      // IMPORTANT: Throw a generic Error with a specific message for the controller to catch
       throw new Error('You are already following this celebrity.');
     }
 
@@ -35,7 +35,6 @@ export class FollowsService {
         userId,
         celebrityId,
       },
-      // IMPORTANT: Include the celebrity data when a new follow is created
       include: {
         celebrity: true,
       },
@@ -53,9 +52,13 @@ export class FollowsService {
     });
 
     if (!existingFollow) {
-      throw new NotFoundException('Not following this celebrity.');
+      // IMPORTANT: Throw NestJS NotFoundException if record doesn't exist
+      throw new NotFoundException('Follow record not found or you are not following this celebrity.');
     }
 
+    // Use deleteMany to ensure a count is returned, or just delete and handle the throw
+    // For simplicity and alignment with the controller's expectation (no count check),
+    // we'll just delete and let the NotFoundException handle the case where it doesn't exist.
     await this.prisma.follow.delete({
       where: {
         userId_celebrityId: {
@@ -64,22 +67,19 @@ export class FollowsService {
         },
       },
     });
-    return { message: 'Unfollowed successfully' };
+    return { message: 'Successfully unfollowed' }; // Return a success message
   }
 
   async getFollowedCelebrities(userId: string) {
     const follows = await this.prisma.follow.findMany({
       where: { userId },
-      // CRITICAL FIX: Explicitly include the related Celebrity data
       include: {
         celebrity: true,
       },
     });
 
-    // Filter out any follow records where the celebrity might be null (e.g., if database integrity issue somehow occurs)
-    // Then map to return only the celebrity objects
     return follows
-      .filter(follow => follow.celebrity !== null)
+      .filter(follow => follow.celebrity !== null) // Filter out any null celebrity relations
       .map(follow => follow.celebrity);
   }
 
