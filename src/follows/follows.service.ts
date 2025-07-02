@@ -36,7 +36,7 @@ export class FollowsService {
     const follows = await this.prisma.follow.findMany({
       where: { userId },
       include: {
-        celebrity: {
+        celebrity: { // Include the full celebrity object
           select: {
             id: true,
             name: true,
@@ -56,7 +56,11 @@ export class FollowsService {
         },
       },
     });
-    return follows.map((follow) => follow.celebrity);
+    // Filter out any follow records where the celebrity might be null or undefined
+    // This happens if a follow record exists but the corresponding celebrity record has been deleted.
+    return follows
+      .filter(follow => follow.celebrity !== null && follow.celebrity !== undefined)
+      .map((follow) => follow.celebrity);
   }
 
   async isFollowing(userId: string, celebrityId: string): Promise<boolean> {
