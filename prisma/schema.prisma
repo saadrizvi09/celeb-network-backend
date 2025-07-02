@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -10,31 +9,29 @@ datasource db {
 }
 
 model Celebrity {
-  // Explicit UUID generation and type for consistency and robustness
+  
   id                          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name                        String    @unique // Removed @db.VarChar for flexibility
-  country                     String    // Removed @db.VarChar
-  profileImageUrl             String?   // Removed @db.VarChar
-  youtubeChannel              String?   // Removed @db.VarChar
-  spotifyId                   String?   // Removed @db.VarChar
-  imdbId                      String?   // Removed @db.VarChar
+  name                        String    @unique @db.VarChar
+  country                     String    @db.VarChar 
+  profileImageUrl             String?   @db.VarChar 
+  youtubeChannel              String?   @db.VarChar 
+  spotifyId                   String?   @db.VarChar 
+  imdbId                      String?   @db.VarChar 
   fanbaseCount                Int       @default(0)
-  sampleSetlistOrKeynoteTopics Json?    // Already correct
+  sampleSetlistOrKeynoteTopics Json?    
   createdAt                   DateTime  @default(now()) @db.Timestamp(6)
   updatedAt                   DateTime  @default(now()) @db.Timestamp(6)
-  description                 String?
-  instagramHandle             String?   // Removed @db.VarChar
-  category                    Json      @default("[]") // Already correct
+  description                 String?   
+  instagramHandle             String?   @db.VarChar 
+  category                    Json      @default("[]") 
 
-  // Add relation for followers
   followedBy Follow[]
 
-  @@map("celebrities") // Already correct
+  @@map("celebrities")
 }
 
-// User Model for Fan Authentication - Consistent explicit UUID
 model User {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid // Consistent explicit UUID
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
   username  String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -43,15 +40,14 @@ model User {
   follows Follow[]
 }
 
-// Follow Model for Many-to-Many relationship - Consistent explicit UUIDs
 model Follow {
-  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid // Consistent explicit UUID
-  userId       String    @db.Uuid // Explicitly define foreign key type as Uuid
-  celebrityId  String    @db.Uuid // Explicitly define foreign key type as Uuid
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid 
+  userId       String    @db.Uuid 
+  celebrityId  String    @db.Uuid 
   followedAt   DateTime  @default(now())
 
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   celebrity    Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, celebrityId]) // Ensures a user can only follow a celebrity once
+  @@unique([userId, celebrityId]) 
 }
