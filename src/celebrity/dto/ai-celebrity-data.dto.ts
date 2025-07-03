@@ -28,6 +28,7 @@ export class AiCelebrityDataDto {
   @IsOptional()
   @IsString()
   spotifyId?: string;
+  
 
   @IsOptional()
   @IsString()

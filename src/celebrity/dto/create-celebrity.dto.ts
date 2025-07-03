@@ -36,6 +36,11 @@ export class CreateCelebrityDto {
   @IsOptional()
   youtubeChannel?: string;
 
+  
+  @IsString()
+  @IsOptional()
+  description?: string;
+
   @IsString()
   @IsOptional()
   spotifyId?: string;

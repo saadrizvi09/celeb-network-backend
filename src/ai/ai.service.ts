@@ -22,8 +22,7 @@ export class AiService {
   }
 
   async suggestCelebrities(query: string): Promise<string[]> {
-    // REFINED PROMPT: Emphasize direct relevance and avoid unrelated suggestions.
-    const prompt = `Given the input "${query}", suggest 3 to 5 highly relevant and well-known celebrity names that are directly related to or match the query. For example, if the query is "Tom", suggestions might be ["Tom Hanks", "Tom Cruise", "Tom Holland"]. If the query is "Diljit", suggestions should be "Diljit Dosanjh". Do NOT suggest names that are unrelated or merely associated. Provide the response as a JSON array of strings, for example: ["Celebrity Name 1", "Celebrity Name 2", "Celebrity Name 3"]. Do not include any other text or formatting outside the JSON array. If no clear, direct matches, respond with an empty JSON array: [].`;
+    const prompt = `Given the input "${query}", if the input is name suggest 3 to 5 celebrities whose name starts with the input or have exact name as the input . For example, if the input is "Tom", suggestions might be ["Tom Hanks", "Tom Cruise", "Tom Holland"]. If the input is "Diljit Dosanjh", suggestions should be "Diljit Dosanjh". If the input is a sentence like Punjabi singer suggest most popular Punjabi singers. Do NOT suggest names that are unrelated or merely associated. Provide the response as a JSON array of strings, for example: ["Celebrity Name 1", "Celebrity Name 2", "Celebrity Name 3"]. Do not include any other text or formatting outside the JSON array. If no clear, direct matches, respond with an empty JSON array: [].`;
 
     try {
       const result = await this.suggestionModel.generateContent({
