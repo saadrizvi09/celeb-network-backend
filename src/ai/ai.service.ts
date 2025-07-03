@@ -65,7 +65,11 @@ export class AiService {
 
 
   async getCelebrityDetailsForAutofill(celebrityName: string): Promise<AiCelebrityDataDto | null> {
-    const prompt = `Provide detailed information for the celebrity "${celebrityName}" in JSON format. Include the following fields: name, category (e.g., Singer, Actor, Speaker), country, description, profileImageUrl, instagramHandle, youtubeChannel, spotifyId, imdbId, fanbaseCount (as a number), and sampleSetlistOrKeynoteTopics (as an array of strings). If a piece of information is not available or applicable, omit the field. Ensure all string values are enclosed in double quotes. Only return the JSON object, nothing else.`;
+    // UPDATED PROMPT: Even stronger emphasis on placeholder/generic URLs
+    const prompt = `Provide detailed information for the celebrity "${celebrityName}" in JSON format. Include the following fields: name, category (e.g., Singer, Actor, Speaker), country, description, profileImageUrl, instagramHandle, youtubeChannel, spotifyId, imdbId, fanbaseCount (as a number), and sampleSetlistOrKeynoteTopics (as an array of strings).
+    For 'profileImageUrl', **it is crucial to provide a URL from a generic placeholder image service (like 'https://placehold.co/' or 'https://via.placeholder.com/') that includes the celebrity's name or initials.**
+    **Absolutely DO NOT use URLs from Wikipedia, Wikimedia Commons, or any specific news/private/stock photo websites (e.g., Getty Images, Shutterstock, Alamy, etc.).**
+    If a piece of information is not available or applicable, omit the field. Ensure all string values are enclosed in double quotes. Only return the JSON object, nothing else.`;
 
     try {
       const result = await this.jsonModel.generateContent({
