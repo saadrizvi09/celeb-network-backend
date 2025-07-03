@@ -1,41 +1,38 @@
-// src/celebrity/celebrity.controller.ts
 import {
   Controller,
   Get,
-  Post, // Assuming you have a POST for creating celebrities
+  Post, 
   Body,
   Param,
-  Res, // Used for sending the PDF response
+  Res, 
   NotFoundException,
   InternalServerErrorException,
   UsePipes,
   ValidationPipe,
-  Query, // IMPORTANT: Add Query import for AI suggestion endpoint
+  Query, 
 } from '@nestjs/common';
 import { CelebrityService } from './celebrity.service';
-import { CreateCelebrityDto } from './dto/create-celebrity.dto'; // Assuming you have this DTO
-import { Response } from 'express'; // IMPORTANT: Import Response from express
-import { PdfService } from '../pdf/pdf.service'; // IMPORTANT: Import PdfService
-import { AiService } from '../ai/ai.service'; // IMPORTANT: Import AiService
+import { CreateCelebrityDto } from './dto/create-celebrity.dto'; 
+import { Response } from 'express'; 
+import { PdfService } from '../pdf/pdf.service'; 
+import { AiService } from '../ai/ai.service'; 
 
 @Controller('celebrities')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true })) // Apply validation pipe globally to this controller
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true })) 
 export class CelebrityController {
   constructor(
     private readonly celebrityService: CelebrityService,
-    private readonly pdfService: PdfService, // Correctly injected PdfService
-    private readonly aiService: AiService, // IMPORTANT: Inject AiService here
+    private readonly pdfService: PdfService, 
+    private readonly aiService: AiService, 
   ) {}
 
   @Post()
-  // No @UseGuards here, as per your original file structure.
-  // If you wish to protect this, add @UseGuards(JwtAuthGuard) above this method.
+  
   async create(@Body() createCelebrityDto: CreateCelebrityDto) {
     return this.celebrityService.create(createCelebrityDto);
   }
 
   @Get()
-  // This endpoint is public
   async findAll() {
     return this.celebrityService.findAll();
   }
@@ -60,39 +57,31 @@ export class CelebrityController {
     return celebrity;
   }
 
-  // --- AI Endpoints (These are public and call AiService) ---
   @Get('ai/suggest-celebrities')
   // This endpoint is public
   async suggestCelebrities(@Query('q') query: string) {
-    // IMPORTANT FIX: Call aiService.suggestCelebrities
     return this.aiService.suggestCelebrities(query);
   }
 
   @Get('ai/autofill-celebrity/:name')
   // This endpoint is public
   async autofillCelebrityData(@Param('name') name: string) {
-    // IMPORTANT FIX: Call aiService.getCelebrityDetailsForAutofill
     return this.aiService.getCelebrityDetailsForAutofill(name);
   }
-  // --- END AI Endpoints ---
 
 
   // PDF Generation Endpoint
   @Get(':id/pdf')
-  // No @UseGuards here, as per your original file structure.
-  // If you wish to protect this, add @UseGuards(JwtAuthGuard) above this method.
   async generateCelebrityProfilePdf(
     @Param('id') id: string,
-    @Res() res: Response, // Use @Res() decorator for direct response manipulation
+    @Res() res: Response, 
   ) {
     const celebrity = await this.celebrityService.findOne(id);
     if (!celebrity) {
       throw new NotFoundException(`Celebrity with ID "${id}" not found.`);
     }
 
-    // Construct HTML for the PDF. This is a crucial step.
-    // You can make this as fancy as your frontend profile page.
-    // Ensure all styles are inline or within <style> tags as Puppeteer renders HTML directly.
+    
     let htmlContent = `
       <html>
       <head>
