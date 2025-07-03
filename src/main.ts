@@ -1,11 +1,9 @@
-// src/main.ts (in your NestJS backend project)
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // --- IMPORTANT: Ensure this CORS configuration is present and correct ---
   app.enableCors({
     origin: [
       'http://localhost:3000', // <--- This is crucial for your local frontend

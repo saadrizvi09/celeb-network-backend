@@ -1,4 +1,3 @@
-// src/ai/ai.service.ts
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { ConfigService } from '@nestjs/config';
@@ -28,7 +27,7 @@ export class AiService {
       const result = await this.suggestionModel.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
-          responseMimeType: 'application/json', // Enforce JSON output
+          responseMimeType: 'application/json', 
         },
       });
 
@@ -64,7 +63,6 @@ export class AiService {
 
 
   async getCelebrityDetailsForAutofill(celebrityName: string): Promise<AiCelebrityDataDto | null> {
-    // UPDATED PROMPT: Even stronger emphasis on placeholder/generic URLs
     const prompt = `Provide detailed information for the celebrity "${celebrityName}" in JSON format. Include the following fields: name, category (e.g., Singer, Actor, Speaker), country, description, profileImageUrl, instagramHandle, youtubeChannel, spotifyId, imdbId, fanbaseCount (as a number), and sampleSetlistOrKeynoteTopics (as an array of strings).
     For 'profileImageUrl', **it is crucial to provide a URL from a generic placeholder image service (like 'https://placehold.co/' or 'https://via.placeholder.com/') that includes the celebrity's name or initials.**
     **Absolutely DO NOT use URLs from Wikipedia, Wikimedia Commons, or any specific news/private/stock photo websites (e.g., Getty Images, Shutterstock, Alamy, etc.).**

@@ -7,7 +7,6 @@ export class FollowsService {
   constructor(private prisma: PrismaService) {}
 
   async followCelebrity(userId: string, celebrityId: string) {
-    // Check if the celebrity exists
     const celebrity = await this.prisma.celebrity.findUnique({
       where: { id: celebrityId },
     });
@@ -15,7 +14,6 @@ export class FollowsService {
       throw new NotFoundException(`Celebrity with ID ${celebrityId} not found.`);
     }
 
-    // Check if the user is already following this celebrity
     const existingFollow = await this.prisma.follow.findUnique({
       where: {
         userId_celebrityId: {
@@ -26,7 +24,6 @@ export class FollowsService {
     });
 
     if (existingFollow) {
-      // IMPORTANT: Throw a generic Error with a specific message for the controller to catch
       throw new Error('You are already following this celebrity.');
     }
 
@@ -52,13 +49,9 @@ export class FollowsService {
     });
 
     if (!existingFollow) {
-      // IMPORTANT: Throw NestJS NotFoundException if record doesn't exist
       throw new NotFoundException('Follow record not found or you are not following this celebrity.');
     }
 
-    // Use deleteMany to ensure a count is returned, or just delete and handle the throw
-    // For simplicity and alignment with the controller's expectation (no count check),
-    // we'll just delete and let the NotFoundException handle the case where it doesn't exist.
     await this.prisma.follow.delete({
       where: {
         userId_celebrityId: {
@@ -67,7 +60,7 @@ export class FollowsService {
         },
       },
     });
-    return { message: 'Successfully unfollowed' }; // Return a success message
+    return { message: 'Successfully unfollowed' }; 
   }
 
   async getFollowedCelebrities(userId: string) {
@@ -79,7 +72,7 @@ export class FollowsService {
     });
 
     return follows
-      .filter(follow => follow.celebrity !== null) // Filter out any null celebrity relations
+      .filter(follow => follow.celebrity !== null) 
       .map(follow => follow.celebrity);
   }
 
