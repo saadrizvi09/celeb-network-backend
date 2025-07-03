@@ -23,7 +23,7 @@ export class AiService {
 
   async suggestCelebrities(query: string): Promise<string[]> {
     // REFINED PROMPT: Emphasize direct relevance and avoid unrelated suggestions.
-    const prompt = `Given the input "${query}", if the query is a name suggest 3-5 celebrities whose name is same as input or whose name starts with the input . For example, if the query is "Tom", suggestions might be ["Tom Hanks", "Tom Cruise", "Tom Holland"]. If the query is "Diljit", suggestions should be "Diljit Dosanjh". If the input is a sentence like Punjabi singer then list 4-6 most popular Punjabi singers. Do NOT suggest names that are unrelated or merely associated. Provide the response as a JSON array of strings, for example: ["Celebrity Name 1", "Celebrity Name 2", "Celebrity Name 3"]. Do not include any other text or formatting outside the JSON array. If no clear, direct matches, respond with an empty JSON array: [].`;
+    const prompt = `Given the input "${query}", suggest 3 to 5 highly relevant and well-known celebrity names that are directly related to or match the query. For example, if the query is "Tom", suggestions might be ["Tom Hanks", "Tom Cruise", "Tom Holland"]. If the query is "Diljit", suggestions should be "Diljit Dosanjh". Do NOT suggest names that are unrelated or merely associated. Provide the response as a JSON array of strings, for example: ["Celebrity Name 1", "Celebrity Name 2", "Celebrity Name 3"]. Do not include any other text or formatting outside the JSON array. If no clear, direct matches, respond with an empty JSON array: [].`;
 
     try {
       const result = await this.suggestionModel.generateContent({
@@ -65,6 +65,7 @@ export class AiService {
 
 
   async getCelebrityDetailsForAutofill(celebrityName: string): Promise<AiCelebrityDataDto | null> {
+    // UPDATED PROMPT: Even stronger emphasis on placeholder/generic URLs
     const prompt = `Provide detailed information for the celebrity "${celebrityName}" in JSON format. Include the following fields: name, category (e.g., Singer, Actor, Speaker), country, description, profileImageUrl, instagramHandle, youtubeChannel, spotifyId, imdbId, fanbaseCount (as a number), and sampleSetlistOrKeynoteTopics (as an array of strings).
     For 'profileImageUrl', **it is crucial to provide a URL from a generic placeholder image service (like 'https://placehold.co/' or 'https://via.placeholder.com/') that includes the celebrity's name or initials.**
     **Absolutely DO NOT use URLs from Wikipedia, Wikimedia Commons, or any specific news/private/stock photo websites (e.g., Getty Images, Shutterstock, Alamy, etc.).**

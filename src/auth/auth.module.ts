@@ -9,19 +9,19 @@ import { AuthService } from './auth.service';
 
 @Module({
   imports: [
-    PrismaModule, 
-    PassportModule, 
+    PrismaModule, // Inject PrismaClient
+    PassportModule, // For authentication strategies
     JwtModule.registerAsync({
-      imports: [ConfigModule], 
+      imports: [ConfigModule], // Import ConfigModule to use ConfigService
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'), 
-        signOptions: { expiresIn: '60m' }, 
+        secret: configService.get<string>('JWT_SECRET'), // Get secret from environment variables
+        signOptions: { expiresIn: '60m' }, // Token expiration
       }),
-      inject: [ConfigService], 
+      inject: [ConfigService], // Inject ConfigService
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy], 
-  exports: [AuthService], 
+  providers: [AuthService, JwtStrategy], // JwtStrategy needs to be a provider
+  exports: [AuthService], // Export AuthService if other modules need to use it (e.g., for validation)
 })
 export class AuthModule {}

@@ -56,8 +56,4 @@ export class CreateCelebrityDto {
   @IsString()
   @IsOptional()
   instagramHandle?: string;
-
-  @IsString()
-  @IsOptional()
-  description?: string;
 }
